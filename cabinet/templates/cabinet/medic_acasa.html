@@ -1,0 +1,68 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}{{ medic }}{% endblock %}
+{% block continut %}
+<h3>{{ medic }}</h3>
+<p class="text-muted">{{ medic.specializare }} · {{ consultatii_luna }} consultații luna aceasta</p>
+
+{% if de_completat %}
+<div class="alert alert-warning">
+  <strong>Programări din zilele trecute fără consultație:</strong>
+  {% for p in de_completat %}
+    <div class="d-flex justify-content-between align-items-center mt-1">
+      <span>{{ p.data|date:"d.m.Y" }}, {{ p.ora|time:"H:i" }} — {{ p.pacient.nume }} {{ p.pacient.prenume }}</span>
+      <a class="btn btn-sm btn-primary" href="{% url 'consulta' p.pk %}">Completează</a>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card mb-4">
+      <div class="card-header">Azi, {{ azi|date:"j F Y" }}</div>
+      <ul class="list-group list-group-flush">
+        {% for p in programari_azi %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ p.ora|time:"H:i" }} — {{ p.pacient.nume }} {{ p.pacient.prenume }}
+              <span class="badge bg-secondary">{{ p.get_status_display }}</span></span>
+            {% if p.status == 'programata' %}
+              <a class="btn btn-sm btn-primary" href="{% url 'consulta' p.pk %}">Consultă</a>
+            {% elif p.status == 'efectuata' %}
+              <a class="btn btn-sm btn-outline-secondary" href="{% url 'consulta' p.pk %}">Vezi</a>
+            {% endif %}
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">Nicio programare azi.</li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-header">Următoarele programări</div>
+      <ul class="list-group list-group-flush">
+        {% for p in programari_viitoare %}
+          <li class="list-group-item">{{ p.data|date:"D j M" }}, {{ p.ora|time:"H:i" }} — {{ p.pacient.nume }} {{ p.pacient.prenume }}</li>
+        {% empty %}
+          <li class="list-group-item text-muted">Nicio programare viitoare.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card">
+      <div class="card-header">Consultații recente</div>
+      <table class="table table-sm mb-0">
+        <thead><tr><th>Data</th><th>Pacient</th><th class="text-end">Cost</th></tr></thead>
+        <tbody>
+        {% for c in recente %}
+          <tr><td><a href="{% url 'consultatie' c.pk %}">{{ c.data_consultatie|date:"d.m.Y" }}</a></td>
+              <td>{{ c.pacient.nume }} {{ c.pacient.prenume }}</td>
+              <td class="text-end">{{ c.cost_total|floatformat:2 }}</td></tr>
+        {% empty %}
+          <tr><td colspan="3" class="text-muted">Nicio consultație.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

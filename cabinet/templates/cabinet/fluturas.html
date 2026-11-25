@@ -1,0 +1,34 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Fluturaș {{ s.medic }} {{ nume_luna }} {{ s.an }}{% endblock %}
+{% block continut %}
+<div class="d-flex justify-content-between mb-3 no-print">
+  <a href="javascript:history.back()">&larr; Înapoi</a>
+  <button class="btn btn-primary" onclick="window.print()">Tipărește fluturașul</button>
+</div>
+
+<div class="card mx-auto" style="max-width: 560px;"><div class="card-body p-4">
+  <div class="d-flex justify-content-between">
+    <div><strong>CABINET MEDICAL</strong><br><span class="small text-muted">Timișoara</span></div>
+    <div class="text-end"><h5 class="mb-0">FLUTURAȘ DE SALARIU</h5><div>{{ nume_luna }} {{ s.an }}</div></div>
+  </div>
+  <hr>
+  <table class="table table-sm table-borderless mb-2">
+    <tr><td>Angajat</td><td class="text-end"><strong>{{ s.medic.nume }} {{ s.medic.prenume }}</strong></td></tr>
+    <tr><td>Funcția</td><td class="text-end">Medic — {{ s.medic.specializare }}</td></tr>
+    <tr><td>Contract</td><td class="text-end">nr. {{ s.medic.contract.nr_contract }}, angajat din {{ s.medic.contract.data_angajarii|date:"d.m.Y" }}</td></tr>
+    <tr><td>Consultații în lună</td><td class="text-end">{{ s.nr_consultatii }}</td></tr>
+  </table>
+  <table class="table table-sm">
+    <tbody>
+      <tr><td>Salariu de încadrare</td><td class="text-end">{{ s.salariu_incadrare|floatformat:2 }}</td></tr>
+      <tr><td>Spor consultații ({{ s.procent_spor|floatformat:0 }}%)</td><td class="text-end">{{ s.valoare_spor|floatformat:2 }}</td></tr>
+      <tr class="fw-bold"><td>Salariu brut</td><td class="text-end">{{ s.salariu_brut|floatformat:2 }}</td></tr>
+      <tr><td>CAS</td><td class="text-end">− {{ s.cas|floatformat:2 }}</td></tr>
+      <tr><td>Bază impozabilă</td><td class="text-end">{{ s.baza_impozabila|floatformat:2 }}</td></tr>
+      <tr><td>Impozit pe salariu</td><td class="text-end">− {{ s.impozit|floatformat:2 }}</td></tr>
+    </tbody>
+    <tfoot><tr class="table-light fs-5"><th>REST DE PLATĂ (NET)</th><th class="text-end">{{ s.salariu_net|floatformat:2 }} lei</th></tr></tfoot>
+  </table>
+  <p class="small text-muted mb-0">Generat la {{ s.data_generarii|date:"d.m.Y" }}.</p>
+</div></div>
+{% endblock %}

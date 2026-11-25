@@ -1,0 +1,57 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Contul meu{% endblock %}
+{% block continut %}
+<div class="d-flex justify-content-between align-items-center mb-1">
+  <h3 class="mb-0">{{ pacient.nume }} {{ pacient.prenume }}</h3>
+  <div>
+    <a class="btn btn-primary" href="{% url 'programare_mea_noua' %}">+ Programează-te</a>
+    <a class="btn btn-outline-primary" href="{% url 'fisa_mea' %}">Fișa mea</a>
+  </div>
+</div>
+<p class="text-muted">Fișa nr. {{ pacient.nr_fisa }} · născut(ă) {{ pacient.data_nasterii|date:"j F Y" }} · {{ pacient.telefon }}</p>
+
+{% if total_rest > 0 %}
+  <div class="alert alert-warning">Mai aveți de achitat <strong>{{ total_rest|floatformat:2 }} lei</strong>.
+    Plata se face la recepția cabinetului.</div>
+{% endif %}
+
+<div class="row g-4">
+  <div class="col-md-5">
+    <div class="card">
+      <div class="card-header">Programări viitoare</div>
+      <ul class="list-group list-group-flush">
+        {% for p in programari_viitoare %}
+          <li class="list-group-item d-flex justify-content-between align-items-center">
+            <span>{{ p.data|date:"D j M Y" }}, {{ p.ora|time:"H:i" }} — {{ p.medic }}</span>
+            <form method="post" action="{% url 'programare_mea_anuleaza' p.pk %}"
+                  onsubmit="return confirm('Anulezi programarea?');">
+              {% csrf_token %}<button class="btn btn-sm btn-outline-danger">Anulează</button>
+            </form>
+          </li>
+        {% empty %}
+          <li class="list-group-item text-muted">Nicio programare.
+            <a href="{% url 'programare_mea_noua' %}">Programează-te</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+  <div class="col-md-7">
+    <div class="card">
+      <div class="card-header">Istoric consultații</div>
+      <table class="table mb-0">
+        <thead><tr><th>Data</th><th>Medic</th><th class="text-end">Cost</th><th class="text-end">Rest</th><th>Chitanțe</th></tr></thead>
+        <tbody>
+        {% for c in consultatii %}
+          <tr><td>{{ c.data_consultatie|date:"j M Y" }}</td><td>{{ c.medic }}</td>
+              <td class="text-end">{{ c.cost_total|floatformat:2 }}</td>
+              <td class="text-end {% if c.rest_de_plata > 0 %}text-danger{% endif %}">{{ c.rest_de_plata|floatformat:2 }}</td>
+              <td>{% for ch in c.chitante.all %}<a href="{% url 'chitanta_mea' ch.nr_chitanta %}">{{ ch.nr_chitanta }}</a>{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</td></tr>
+        {% empty %}
+          <tr><td colspan="5" class="text-muted">Nicio consultație.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

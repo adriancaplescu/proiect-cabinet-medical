@@ -1,0 +1,15 @@
+# Mediul virtual Python (se recreează cu pip install -r requirements.txt)
+venv/
+.venv/
+
+# Fișiere generate de Python
+__pycache__/
+*.pyc
+
+# Baza SQLite implicită (proiectul folosește MySQL)
+db.sqlite3
+
+# Fișiere de sistem și editor
+.DS_Store
+.vscode/
+.idea/

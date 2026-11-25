@@ -1,0 +1,45 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Recepție{% endblock %}
+{% block continut %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h3 class="mb-0">Recepție — {{ azi|date:"l, j F Y" }}</h3>
+  <div>
+    <a class="btn btn-primary" href="{% url 'programare_noua' %}">+ Programare</a>
+    <a class="btn btn-outline-primary" href="{% url 'pacient_nou' %}">+ Pacient</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-md-3"><div class="card position-relative"><div class="card-body">
+    <div class="text-muted small">Programări azi</div>
+    <div class="fs-3 fw-bold">{{ programari_azi|length }}</div>
+  </div></div></div>
+  <div class="col-md-3"><div class="card position-relative"><div class="card-body">
+    <div class="text-muted small"><a href="{% url 'incasari' %}" class="stretched-link text-reset text-decoration-none">Încasat azi</a></div>
+    <div class="fs-3 fw-bold">{{ incasat_azi|floatformat:2 }} lei</div>
+  </div></div></div>
+  <div class="col-md-3"><div class="card position-relative"><div class="card-body">
+    <div class="text-muted small"><a href="{% url 'incasari' %}?tip=luna" class="stretched-link text-reset text-decoration-none">Încasat luna aceasta</a></div>
+    <div class="fs-3 fw-bold">{{ incasat_luna|floatformat:2 }} lei</div>
+  </div></div></div>
+  <div class="col-md-3"><div class="card border-warning position-relative"><div class="card-body">
+    <div class="text-muted small"><a href="{% url 'restante' %}" class="stretched-link text-reset text-decoration-none">De încasat ({{ nr_restante }} consultații)</a></div>
+    <div class="fs-3 fw-bold text-warning">{{ total_restante|floatformat:2 }} lei</div>
+  </div></div></div>
+</div>
+
+<div class="card">
+  <div class="card-header">Programările de azi</div>
+  <table class="table mb-0">
+    <thead><tr><th>Ora</th><th>Pacient</th><th>Medic</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for p in programari_azi %}
+      <tr><td>{{ p.ora|time:"H:i" }}</td><td>{{ p.pacient.nume }} {{ p.pacient.prenume }}</td>
+          <td>{{ p.medic }}</td><td>{{ p.get_status_display }}</td></tr>
+    {% empty %}
+      <tr><td colspan="4" class="text-muted">Nicio programare azi.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

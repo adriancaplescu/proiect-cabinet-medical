@@ -1,0 +1,70 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Stat de plată {{ nume_luna }} {{ an }}{% endblock %}
+{% block continut %}
+<div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3 no-print">
+  <form method="get" class="d-flex gap-2">
+    <select class="form-select" name="luna">
+      {% for nr, nume in luni %}<option value="{{ nr }}" {% if nr == luna %}selected{% endif %}>{{ nume }}</option>{% endfor %}
+    </select>
+    <select class="form-select" name="an">
+      {% for a in ani %}<option value="{{ a }}" {% if a == an %}selected{% endif %}>{{ a }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-secondary">Afișează</button>
+  </form>
+  <div class="d-flex gap-2">
+    <form method="post">
+      {% csrf_token %}
+      <input type="hidden" name="luna" value="{{ luna }}"><input type="hidden" name="an" value="{{ an }}">
+      <button class="btn btn-primary">{% if randuri %}Recalculează{% else %}Generează{% endif %} statul de plată</button>
+    </form>
+    {% if randuri %}<button class="btn btn-outline-secondary" onclick="window.print()">Tipărește</button>{% endif %}
+  </div>
+</div>
+
+<h3>Stat de plată — {{ nume_luna }} {{ an }}</h3>
+<p class="text-muted small">Spor acordat după numărul de consultații din lună (vezi Grila sporuri în admin).
+  Rețineri: CAS și impozit pe salariu.</p>
+
+{% if randuri %}
+<div class="card">
+  <div class="table-responsive">
+  <table class="table table-sm table-hover mb-0 align-middle">
+    <thead class="table-light"><tr>
+      <th>Medic</th><th class="text-end">Consultații</th><th class="text-end">Salariu încadrare</th>
+      <th class="text-end">Spor %</th><th class="text-end">Spor</th><th class="text-end">Brut</th>
+      <th class="text-end">CAS</th><th class="text-end">Impozit</th><th class="text-end">Net</th><th class="no-print"></th>
+    </tr></thead>
+    <tbody>
+    {% for s in randuri %}
+      <tr>
+        <td>{{ s.medic }}</td>
+        <td class="text-end">{{ s.nr_consultatii }}</td>
+        <td class="text-end">{{ s.salariu_incadrare|floatformat:2 }}</td>
+        <td class="text-end">{{ s.procent_spor|floatformat:0 }}%</td>
+        <td class="text-end">{{ s.valoare_spor|floatformat:2 }}</td>
+        <td class="text-end">{{ s.salariu_brut|floatformat:2 }}</td>
+        <td class="text-end">{{ s.cas|floatformat:2 }}</td>
+        <td class="text-end">{{ s.impozit|floatformat:2 }}</td>
+        <td class="text-end fw-bold">{{ s.salariu_net|floatformat:2 }}</td>
+        <td class="text-end no-print"><a class="btn btn-sm btn-outline-primary" href="{% url 'fluturas' s.pk %}">Fluturaș</a></td>
+      </tr>
+    {% endfor %}
+    </tbody>
+    <tfoot class="table-light"><tr>
+      <th colspan="4">TOTAL</th>
+      <th class="text-end">{{ totaluri.spor|floatformat:2 }}</th>
+      <th class="text-end">{{ totaluri.brut|floatformat:2 }}</th>
+      <th class="text-end">{{ totaluri.cas|floatformat:2 }}</th>
+      <th class="text-end">{{ totaluri.impozit|floatformat:2 }}</th>
+      <th class="text-end">{{ totaluri.net|floatformat:2 }}</th><th class="no-print"></th>
+    </tr></tfoot>
+  </table>
+  </div>
+</div>
+<p class="text-muted small mt-2">Generat la {{ randuri.0.data_generarii|date:"d.m.Y" }}.
+  Dacă s-au adăugat consultații între timp, apasă „Recalculează”.</p>
+{% else %}
+  <div class="alert alert-info">Statul de plată pe {{ nume_luna }} {{ an }} nu a fost generat încă.
+    Apasă „Generează statul de plată”.</div>
+{% endif %}
+{% endblock %}

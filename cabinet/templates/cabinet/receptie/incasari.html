@@ -1,0 +1,60 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Încasări{% endblock %}
+{% block continut %}
+<ul class="nav nav-tabs mb-3 no-print">
+  <li class="nav-item"><a class="nav-link {% if tip == 'zi' %}active{% endif %}" href="?tip=zi">Zilnice</a></li>
+  <li class="nav-item"><a class="nav-link {% if tip == 'luna' %}active{% endif %}" href="?tip=luna">Lunare</a></li>
+  <li class="nav-item"><a class="nav-link {% if tip == 'an' %}active{% endif %}" href="?tip=an">Anuale</a></li>
+</ul>
+
+<form method="get" class="row g-2 align-items-end mb-3 no-print">
+  <input type="hidden" name="tip" value="{{ tip }}">
+  {% if tip == 'zi' %}
+    <div class="col-auto"><input class="form-control" type="date" name="data" value="{{ zi|date:'Y-m-d' }}"></div>
+  {% endif %}
+  {% if tip == 'luna' %}
+    <div class="col-auto"><select class="form-select" name="luna">
+      {% for nr, nume in luni %}<option value="{{ nr }}" {% if nr == luna %}selected{% endif %}>{{ nume }}</option>{% endfor %}
+    </select></div>
+  {% endif %}
+  {% if tip == 'luna' or tip == 'an' %}
+    <div class="col-auto"><select class="form-select" name="an">
+      {% for a in ani %}<option value="{{ a }}" {% if a == an %}selected{% endif %}>{{ a }}</option>{% endfor %}
+    </select></div>
+  {% endif %}
+  <div class="col-auto"><button class="btn btn-secondary">Afișează</button></div>
+  <div class="col-auto"><button type="button" class="btn btn-outline-secondary" onclick="window.print()">Tipărește</button></div>
+</form>
+
+<h3>{{ titlu }}</h3>
+<p class="text-muted">{{ nr_chitante }} chitanțe</p>
+
+<div class="card">
+  <table class="table table-hover mb-0">
+    {% if tip == 'zi' %}
+      <thead><tr><th>Nr. chitanță</th><th>Pacient</th><th>Consultația din</th><th class="text-end">Suma</th></tr></thead>
+      <tbody>
+      {% for ch in chitante %}
+        <tr><td><a href="{% url 'chitanta' ch.nr_chitanta %}">{{ ch.nr_chitanta }}</a></td>
+            <td>{{ ch.consultatie.pacient.nume }} {{ ch.consultatie.pacient.prenume }}</td>
+            <td>{{ ch.consultatie.data_consultatie|date:"d.m.Y" }}</td>
+            <td class="text-end">{{ ch.suma_achitata|floatformat:2 }}</td></tr>
+      {% empty %}
+        <tr><td colspan="4" class="text-muted">Nicio încasare în această zi.</td></tr>
+      {% endfor %}
+      </tbody>
+    {% else %}
+      <thead><tr><th>{% if tip == 'luna' %}Ziua{% else %}Luna{% endif %}</th><th class="text-end">Total încasat</th></tr></thead>
+      <tbody>
+      {% for r in randuri %}
+        <tr><td><a href="{{ r.link }}">{{ r.eticheta }}</a></td><td class="text-end">{{ r.total|floatformat:2 }}</td></tr>
+      {% empty %}
+        <tr><td colspan="2" class="text-muted">Nicio încasare în perioada aleasă.</td></tr>
+      {% endfor %}
+      </tbody>
+    {% endif %}
+    <tfoot><tr class="table-light"><th {% if tip == 'zi' %}colspan="3"{% endif %}>TOTAL</th>
+      <th class="text-end">{{ total|floatformat:2 }} lei</th></tr></tfoot>
+  </table>
+</div>
+{% endblock %}

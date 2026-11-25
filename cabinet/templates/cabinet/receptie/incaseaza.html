@@ -1,0 +1,32 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Încasare{% endblock %}
+{% block continut %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <h3 class="mb-3">Încasare</h3>
+    <div class="card mb-3"><div class="card-body">
+      <p class="mb-1"><strong>Pacient:</strong> {{ cons.pacient.nume }} {{ cons.pacient.prenume }} (fișa {{ cons.pacient.nr_fisa }})</p>
+      <p class="mb-1"><strong>Consultația din:</strong> {{ cons.data_consultatie|date:"d.m.Y" }} — {{ cons.medic }}</p>
+      <p class="mb-1"><strong>Cost total:</strong> {{ cons.cost_total|floatformat:2 }} lei</p>
+      <p class="mb-1"><strong>Achitat până acum:</strong> {{ cons.total_achitat|floatformat:2 }} lei</p>
+      <p class="mb-0 fs-5"><strong>Rest de plată:</strong> <span class="text-danger">{{ rest|floatformat:2 }} lei</span></p>
+    </div></div>
+    <div class="card"><div class="card-body">
+      <form method="post" novalidate>
+        {% csrf_token %}
+        {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label" for="{{ field.id_for_label }}">{{ field.label|capfirst }}</label>
+            {{ field }}
+            {% for e in field.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+          </div>
+        {% endfor %}
+        <p class="text-muted small">Poți încasa toată suma sau doar o parte; restul rămâne de plată și se poate încasa ulterior cu o altă chitanță.</p>
+        <button class="btn btn-success">Emite chitanța</button>
+        <a class="btn btn-link" href="{% url 'pacient_fisa' cons.pacient.nr_fisa %}">Renunță</a>
+      </form>
+    </div></div>
+  </div>
+</div>
+{% endblock %}

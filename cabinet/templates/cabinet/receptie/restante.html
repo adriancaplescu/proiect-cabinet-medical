@@ -1,0 +1,36 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Restanțe{% endblock %}
+{% block continut %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h3 class="mb-0">Pacienți cu sume de achitat — la {{ azi|date:"d.m.Y" }}</h3>
+  <button class="btn btn-outline-secondary no-print" onclick="window.print()">Tipărește</button>
+</div>
+
+{% for r in randuri %}
+  <div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+      <span><a href="{% url 'pacient_fisa' r.pacient.nr_fisa %}">{{ r.pacient.nume }} {{ r.pacient.prenume }}</a>
+        · fișa {{ r.pacient.nr_fisa }} · tel. {{ r.pacient.telefon }}</span>
+      <strong class="text-danger">{{ r.total|floatformat:2 }} lei</strong>
+    </div>
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Consultația din</th><th>Medic</th><th class="text-end">Cost</th>
+                 <th class="text-end">Achitat</th><th class="text-end">Rest</th><th class="no-print"></th></tr></thead>
+      <tbody>
+      {% for x in r.consultatii %}
+        <tr><td>{{ x.c.data_consultatie|date:"d.m.Y" }}</td><td>{{ x.c.medic }}</td>
+            <td class="text-end">{{ x.cost|floatformat:2 }}</td><td class="text-end">{{ x.achitat|floatformat:2 }}</td>
+            <td class="text-end text-danger">{{ x.rest|floatformat:2 }}</td>
+            <td class="text-end no-print"><a class="btn btn-sm btn-success" href="{% url 'incaseaza' x.c.pk %}">Încasează</a></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% empty %}
+  <div class="alert alert-success">Toți pacienții și-au achitat consultațiile.</div>
+{% endfor %}
+
+{% if randuri %}
+  <div class="text-end fs-5">Total de încasat: <strong class="text-danger">{{ total_general|floatformat:2 }} lei</strong></div>
+{% endif %}
+{% endblock %}

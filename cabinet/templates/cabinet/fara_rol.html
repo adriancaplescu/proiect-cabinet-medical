@@ -1,0 +1,4 @@
+{% extends 'cabinet/base.html' %}
+{% block continut %}
+<div class="alert alert-warning">{{ mesaj|default:"Contul tău nu are încă un rol (Recepție, Medic sau Pacient)." }}</div>
+{% endblock %}

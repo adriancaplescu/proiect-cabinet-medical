@@ -1,0 +1,52 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Chitanța nr. {{ ch.nr_chitanta }}{% endblock %}
+{% block continut %}
+<div class="d-flex justify-content-between mb-3 no-print">
+  {% if rol_receptie %}
+    <a href="{% url 'pacient_fisa' pacient.nr_fisa %}">&larr; Fișa pacientului</a>
+  {% else %}
+    <a href="{% url 'fisa_mea' %}">&larr; Fișa mea</a>
+  {% endif %}
+  <button class="btn btn-primary" onclick="window.print()">Tipărește chitanța</button>
+</div>
+
+<div class="card mx-auto" style="max-width: 640px;"><div class="card-body p-4">
+  <div class="d-flex justify-content-between">
+    <div>
+      <strong>CABINET MEDICAL</strong><br>
+      <span class="small text-muted">Timișoara</span>
+    </div>
+    <div class="text-end">
+      <h4 class="mb-0">CHITANȚĂ</h4>
+      <div>Nr. <strong>{{ ch.nr_chitanta }}</strong></div>
+      <div>Data: {{ ch.data_emiterii|date:"d.m.Y" }}</div>
+    </div>
+  </div>
+  <hr>
+  <p>Am primit de la <strong>{{ pacient.nume }} {{ pacient.prenume }}</strong>
+     (fișa nr. {{ pacient.nr_fisa }}), adresa {{ pacient.adresa }},</p>
+  <p>suma de <strong class="fs-4">{{ ch.suma_achitata|floatformat:2 }} lei</strong>,</p>
+  <p>reprezentând contravaloarea consultației din {{ cons.data_consultatie|date:"d.m.Y" }}
+     efectuate de {{ cons.medic }}.</p>
+
+  <table class="table table-sm mt-3">
+    <thead><tr><th>Intervenție</th><th class="text-end">Cant.</th><th class="text-end">Valoare</th></tr></thead>
+    <tbody>
+      {% for d in cons.detalii.all %}
+        <tr><td>{{ d.interventie }}</td><td class="text-end">{{ d.cantitate }}</td>
+            <td class="text-end">{{ d.valoare|floatformat:2 }}</td></tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr><th colspan="2">Total consultație</th><th class="text-end">{{ cost_total|floatformat:2 }}</th></tr>
+      <tr><td colspan="2">Rest de plată după această chitanță</td>
+          <td class="text-end">{{ rest_dupa|floatformat:2 }}</td></tr>
+    </tfoot>
+  </table>
+
+  <div class="d-flex justify-content-between mt-5">
+    <div>Casier,<br><br>______________</div>
+    <div class="text-end">Am primit,<br><br>______________</div>
+  </div>
+</div></div>
+{% endblock %}

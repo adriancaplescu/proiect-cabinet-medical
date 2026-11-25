@@ -1,0 +1,23 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Fluturașii mei{% endblock %}
+{% block continut %}
+<h3>Fluturașii mei de salariu</h3>
+<p class="text-muted">{{ medic }}</p>
+<div class="card">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Luna</th><th class="text-end">Consultații</th><th class="text-end">Spor</th>
+               <th class="text-end">Brut</th><th class="text-end">Net</th><th></th></tr></thead>
+    <tbody>
+    {% for s, nume_luna in state %}
+      <tr><td>{{ nume_luna }} {{ s.an }}</td><td class="text-end">{{ s.nr_consultatii }}</td>
+          <td class="text-end">{{ s.procent_spor|floatformat:0 }}%</td>
+          <td class="text-end">{{ s.salariu_brut|floatformat:2 }}</td>
+          <td class="text-end fw-bold">{{ s.salariu_net|floatformat:2 }}</td>
+          <td class="text-end"><a class="btn btn-sm btn-outline-primary" href="{% url 'fluturas' s.pk %}">Deschide</a></td></tr>
+    {% empty %}
+      <tr><td colspan="6" class="text-muted">Nu există încă state de plată generate.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

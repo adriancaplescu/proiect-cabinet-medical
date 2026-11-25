@@ -1,0 +1,81 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Fișa {{ pacient.nr_fisa }} - {{ pacient.nume }} {{ pacient.prenume }}{% endblock %}
+{% block continut %}
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+  {% if rol_receptie %}
+    <a href="{% url 'pacienti_lista' %}">&larr; Înapoi la pacienți</a>
+  {% else %}
+    <a href="{% url 'pacient_acasa' %}">&larr; Contul meu</a>
+  {% endif %}
+  <div>
+    {% if rol_receptie %}
+      <a class="btn btn-outline-primary" href="{% url 'pacient_editeaza' pacient.nr_fisa %}">Editează</a>
+      <a class="btn btn-outline-primary" href="{% url 'programare_noua' %}?pacient={{ pacient.nr_fisa }}">Programează</a>
+    {% else %}
+      <a class="btn btn-outline-primary" href="{% url 'programare_mea_noua' %}">Programează-te</a>
+    {% endif %}
+    <button class="btn btn-primary" onclick="window.print()">Tipărește fișa</button>
+  </div>
+</div>
+
+<div class="card mb-4"><div class="card-body">
+  <h3 class="mb-1">Fișa pacientului nr. {{ pacient.nr_fisa }}</h3>
+  <p class="text-muted">Întocmită la {{ pacient.data_intocmirii|date:"d.m.Y" }}</p>
+  <div class="row">
+    <div class="col-md-6">
+      <p class="mb-1"><strong>Nume:</strong> {{ pacient.nume }} {{ pacient.prenume }}</p>
+      <p class="mb-1"><strong>Data nașterii:</strong> {{ pacient.data_nasterii|date:"d.m.Y" }}</p>
+    </div>
+    <div class="col-md-6">
+      <p class="mb-1"><strong>Adresă:</strong> {{ pacient.adresa }}</p>
+      <p class="mb-1"><strong>Telefon:</strong> {{ pacient.telefon }}</p>
+    </div>
+  </div>
+  {% if total_rest > 0 %}
+    <div class="alert alert-warning mt-3 mb-0">Rest de plată: <strong>{{ total_rest|floatformat:2 }} lei</strong></div>
+  {% endif %}
+</div></div>
+
+{% if programari_viitoare %}
+<h5>Programări viitoare</h5>
+<ul class="mb-4">
+  {% for p in programari_viitoare %}<li>{{ p.data|date:"d.m.Y" }}, ora {{ p.ora|time:"H:i" }} — {{ p.medic }}</li>{% endfor %}
+</ul>
+{% endif %}
+
+<h5>Consultații</h5>
+{% for c in consultatii %}
+  <div class="card mb-3"><div class="card-body">
+    <div class="d-flex justify-content-between">
+      <strong>{{ c.data_consultatie|date:"d.m.Y" }} — {{ c.medic }}</strong>
+      <span>Cost: {{ c.cost_total|floatformat:2 }} lei · Achitat: {{ c.total_achitat|floatformat:2 }} lei
+        {% if c.rest_de_plata > 0 %}· <span class="text-danger">Rest: {{ c.rest_de_plata|floatformat:2 }} lei</span>{% endif %}
+      </span>
+    </div>
+    <table class="table table-sm mt-2 mb-1">
+      <thead><tr><th>Intervenție</th><th class="text-end">Cant.</th><th class="text-end">Materiale</th>
+                 <th class="text-end">Tarif</th><th class="text-end">Valoare</th></tr></thead>
+      <tbody>
+      {% for d in c.detalii.all %}
+        <tr><td>{{ d.interventie }}</td><td class="text-end">{{ d.cantitate }}</td>
+            <td class="text-end">{{ d.cost_materiale_aplicat }}</td><td class="text-end">{{ d.tarif_aplicat }}</td>
+            <td class="text-end">{{ d.valoare|floatformat:2 }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% if c.observatii %}<p class="mb-1 small"><em>Observații:</em> {{ c.observatii }}</p>{% endif %}
+    <div class="d-flex justify-content-between align-items-center small">
+      <span>Chitanțe:
+        {% for ch in c.chitante.all %}
+          <a href="{% if rol_receptie %}{% url 'chitanta' ch.nr_chitanta %}{% else %}{% url 'chitanta_mea' ch.nr_chitanta %}{% endif %}">nr. {{ ch.nr_chitanta }}</a> ({{ ch.data_emiterii|date:"d.m.Y" }}, {{ ch.suma_achitata|floatformat:2 }} lei){% if not forloop.last %}, {% endif %}
+        {% empty %}niciuna{% endfor %}
+      </span>
+      {% if c.rest_de_plata > 0 and rol_receptie %}
+        <a class="btn btn-sm btn-success no-print" href="{% url 'incaseaza' c.pk %}">Încasează</a>
+      {% endif %}
+    </div>
+  </div></div>
+{% empty %}
+  <p class="text-muted">Nicio consultație.</p>
+{% endfor %}
+{% endblock %}

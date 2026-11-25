@@ -1,0 +1,60 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Pacienții mei{% endblock %}
+{% block continut %}
+{% if receptie %}<p class="no-print mb-2"><a href="{% url 'pacienti_lista' %}">&larr; Înapoi la pacienți</a></p>{% endif %}
+<ul class="nav nav-tabs mb-3 no-print">
+  <li class="nav-item"><a class="nav-link {% if tip == 'luna' %}active{% endif %}" href="?tip=luna&an={{ an }}&luna={{ luna }}{% if receptie %}&medic={{ medic.pk }}{% endif %}">Pe lună</a></li>
+  <li class="nav-item"><a class="nav-link {% if tip == 'an' %}active{% endif %}" href="?tip=an&an={{ an }}{% if receptie %}&medic={{ medic.pk }}{% endif %}">Pe an</a></li>
+</ul>
+<form method="get" class="d-flex gap-2 mb-3 no-print">
+  <input type="hidden" name="tip" value="{{ tip }}">
+  {% if receptie %}
+  <select class="form-select w-auto" name="medic">
+    {% for m in medici %}<option value="{{ m.pk }}" {% if m.pk == medic.pk %}selected{% endif %}>{{ m }}</option>{% endfor %}
+  </select>
+  {% endif %}
+  {% if tip == 'luna' %}
+  <select class="form-select w-auto" name="luna">
+    {% for nr, nume in luni %}<option value="{{ nr }}" {% if nr == luna %}selected{% endif %}>{{ nume }}</option>{% endfor %}
+  </select>
+  {% endif %}
+  <select class="form-select w-auto" name="an">
+    {% for a in ani %}<option value="{{ a }}" {% if a == an %}selected{% endif %}>{{ a }}</option>{% endfor %}
+  </select>
+  <button class="btn btn-secondary">Afișează</button>
+  <button type="button" class="btn btn-outline-secondary" onclick="window.print()">Tipărește</button>
+</form>
+
+<h3>{{ titlu }}</h3>
+<p class="text-muted">{{ medic }} · {{ pacienti|length }} pacienți · {{ nr_consultatii }} consultații</p>
+
+<div class="card mb-4">
+  <table class="table table-hover mb-0">
+    <thead><tr><th>Fișa</th><th>Pacient</th><th>Telefon</th><th class="text-end">Consultații</th><th>Prima</th><th>Ultima</th></tr></thead>
+    <tbody>
+    {% for p in pacienti %}
+      <tr><td>{{ p.nr_fisa }}</td>
+          <td>{% if receptie %}<a href="{% url 'pacient_fisa' p.nr_fisa %}">{{ p.nume }} {{ p.prenume }}</a>{% else %}{{ p.nume }} {{ p.prenume }}{% endif %}</td><td>{{ p.telefon }}</td>
+          <td class="text-end">{{ p.nr }}</td><td>{{ p.prima|date:"d.m.Y" }}</td><td>{{ p.ultima|date:"d.m.Y" }}</td></tr>
+    {% empty %}
+      <tr><td colspan="6" class="text-muted">Niciun pacient consultat în perioada aleasă.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if consultatii %}
+<h5>Consultațiile din perioadă</h5>
+<div class="card">
+  <table class="table table-sm mb-0">
+    <thead><tr><th>Data</th><th>Pacient</th><th class="text-end">Cost</th></tr></thead>
+    <tbody>
+    {% for c in consultatii %}
+      <tr><td>{% if receptie %}{{ c.data_consultatie|date:"d.m.Y" }}{% else %}<a href="{% url 'consultatie' c.pk %}">{{ c.data_consultatie|date:"d.m.Y" }}</a>{% endif %}</td>
+          <td>{{ c.pacient.nume }} {{ c.pacient.prenume }}</td><td class="text-end">{{ c.cost_total|floatformat:2 }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}

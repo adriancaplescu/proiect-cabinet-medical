@@ -1,0 +1,92 @@
+{% extends 'cabinet/base.html' %}
+{% block titlu %}Foaie de consultație — {{ pacient.nume }} {{ pacient.prenume }}{% endblock %}
+{% block continut %}
+<div class="d-flex justify-content-between align-items-center mb-3 no-print">
+  <a href="{% url 'medic_acasa' %}">&larr; Înapoi</a>
+  {% if not nou %}<button class="btn btn-outline-secondary" onclick="window.print()">Tipărește</button>{% endif %}
+</div>
+
+<h3>Foaie de consultație</h3>
+<div class="card mb-3"><div class="card-body">
+  <div class="row">
+    <div class="col-md-6">
+      <p class="mb-1"><strong>Pacient:</strong> {{ pacient.nume }} {{ pacient.prenume }} (fișa {{ pacient.nr_fisa }})</p>
+      <p class="mb-1"><strong>Data nașterii:</strong> {{ pacient.data_nasterii|date:"d.m.Y" }}</p>
+    </div>
+    <div class="col-md-6">
+      <p class="mb-1"><strong>Medic:</strong> {{ prog.medic }}</p>
+      <p class="mb-1"><strong>Programare:</strong> {{ prog.data|date:"d.m.Y" }}, ora {{ prog.ora|time:"H:i" }}</p>
+    </div>
+  </div>
+</div></div>
+
+{% if blocata %}
+  <div class="alert alert-secondary">S-au emis deja chitanțe pentru această consultație, deci nu mai poate fi modificată.</div>
+  <div class="card"><div class="card-body">
+    <p><strong>Data consultației:</strong> {{ cons.data_consultatie|date:"d.m.Y" }}</p>
+    <table class="table table-sm">
+      <thead><tr><th>Intervenție</th><th class="text-end">Cant.</th><th class="text-end">Valoare</th><th>Observații</th></tr></thead>
+      <tbody>
+      {% for d in cons.detalii.all %}
+        <tr><td>{{ d.interventie }}</td><td class="text-end">{{ d.cantitate }}</td>
+            <td class="text-end">{{ d.valoare|floatformat:2 }}</td><td>{{ d.observatii }}</td></tr>
+      {% endfor %}
+      </tbody>
+      <tfoot><tr><th colspan="2">Cost total</th><th class="text-end">{{ cons.cost_total|floatformat:2 }} lei</th><th></th></tr></tfoot>
+    </table>
+    {% if cons.observatii %}<p class="mb-0"><strong>Observații:</strong> {{ cons.observatii }}</p>{% endif %}
+  </div></div>
+{% else %}
+<form method="post" novalidate>
+  {% csrf_token %}
+  {{ formset.management_form }}
+  <div class="card mb-3"><div class="card-body">
+    <div class="row">
+      <div class="col-md-3">
+        <label class="form-label">{{ form.data_consultatie.label|capfirst }}</label>
+        {{ form.data_consultatie }}
+        {% for e in form.data_consultatie.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+      </div>
+      <div class="col-md-9">
+        <label class="form-label">{{ form.observatii.label|capfirst }}</label>
+        {{ form.observatii }}
+      </div>
+    </div>
+  </div></div>
+
+  <div class="card mb-3">
+    <div class="card-header">Intervenții efectuate</div>
+    <div class="card-body">
+      {% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors|join:" " }}</div>{% endif %}
+      {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors|join:" " }}</div>{% endif %}
+      <table class="table table-sm align-middle mb-0">
+        <thead><tr><th style="width:45%">Intervenție (din catalog)</th><th style="width:12%">Cantitate</th>
+                   <th>Observații</th>{% if not nou %}<th class="text-end">Valoare</th><th>Șterge</th>{% endif %}</tr></thead>
+        <tbody>
+        {% for f in formset %}
+          <tr>
+            <td>{{ f.id }}{{ f.interventie }}
+                {% for e in f.interventie.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                {% for e in f.non_field_errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}
+                {% for e in f.id.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</td>
+            <td>{{ f.cantitate }}{% for e in f.cantitate.errors %}<div class="text-danger small">{{ e }}</div>{% endfor %}</td>
+            <td>{{ f.observatii }}</td>
+            {% if not nou %}
+              <td class="text-end">{% if f.instance.pk %}{{ f.instance.valoare|floatformat:2 }}{% endif %}</td>
+              <td>{% if f.instance.pk %}{{ f.DELETE }}{% endif %}</td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+        </tbody>
+        {% if not nou %}
+        <tfoot><tr><th colspan="3">Cost total</th><th class="text-end">{{ cons.cost_total|floatformat:2 }} lei</th><th></th></tr></tfoot>
+        {% endif %}
+      </table>
+      <p class="text-muted small mt-2 mb-0">Completează câte un rând pentru fiecare intervenție; rândurile goale sunt ignorate.
+        Prețul se preia din catalog în momentul salvării.</p>
+    </div>
+  </div>
+  <button class="btn btn-primary">{% if nou %}Salvează consultația{% else %}Salvează modificările{% endif %}</button>
+</form>
+{% endif %}
+{% endblock %}
