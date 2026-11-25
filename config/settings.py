@@ -136,3 +136,13 @@ MAILERS = {
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'acasa'
 LOGOUT_REDIRECT_URL = 'login'
+
+# Folderul în care `collectstatic` adună CSS-ul panoului de administrare (pentru serverul online)
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Setările serverului online (cheie secretă, baza MySQL de acolo) stau în
+# config/local_settings.py, care nu  urcă pe GitHub. Local nu există.
+try:
+    from .local_settings import *  # noqa: F401,F403
+except ImportError:
+    pass

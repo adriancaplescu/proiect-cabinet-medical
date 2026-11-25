@@ -13,3 +13,7 @@ db.sqlite3
 .DS_Store
 .vscode/
 .idea/
+
+# Setările serverului online și fișierele statice adunate
+config/local_settings.py
+staticfiles/
